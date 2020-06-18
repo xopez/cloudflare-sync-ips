@@ -40,4 +40,6 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	for cfip in `cat /tmp/cf_ips`; do
 		ufw allow proto tcp from $cfip to any port 80,443 comment 'Cloudflare IP';
 	done
+
+	ufw reload
 fi
