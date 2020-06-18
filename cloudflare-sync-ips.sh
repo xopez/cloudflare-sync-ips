@@ -1,8 +1,10 @@
 #!/bin/bash
 
+# get response codes
 responseipv4=$(curl --head --write-out %{http_code} --silent --output /dev/null https://www.cloudflare.com/ips-v4)
 responseipv6=$(curl --head --write-out %{http_code} --silent --output /dev/null https://www.cloudflare.com/ips-v6)
 
+# do only, if both adresses are reachable
 if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	CLOUDFLARE_FILE_PATH=/etc/nginx/cloudflare_realip.conf
 	curl https://www.cloudflare.com/ips-v4 -o /tmp/cf_ipv4
@@ -26,14 +28,15 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	echo "" >> $CLOUDFLARE_FILE_PATH;
 	echo "real_ip_header CF-Connecting-IP;" >> $CLOUDFLARE_FILE_PATH;
 
-	#test configuration and reload nginx
+	# test configuration and reload nginx
 	nginx -t && systemctl reload nginx
 
-	#ufw part
+	# delete old rules which are commented clearly with "Cloudflare IP". Don't ever comment an ufw rule with that. Otherwise it will get deleted too.
 	for NUM in $(ufw status numbered | grep 'Cloudflare IP' | awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn); do
 		yes | ufw delete $NUM;
 	done
 
+	# add new ip rules for ufw
 	for cfip in `cat /tmp/cf_ips`; do
 		ufw allow proto tcp from $cfip to any port 80,443 comment 'Cloudflare IP';
 	done
