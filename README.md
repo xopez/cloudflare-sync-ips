@@ -4,9 +4,7 @@ If you use cloudflare you only need to allow cloudflare in your firewall for sec
 
 You also need to include this in your `nginx.conf`:
 ```nginx
-# Cloudflare
 include /etc/nginx/cloudflare_realip.conf;
-real_ip_header CF-Connecting-IP;
 ```
 
 Also make a cronjob and be sure that ufw is enabled. Don't forget to allow custom ports like ssh, ftp or whatever you need.
