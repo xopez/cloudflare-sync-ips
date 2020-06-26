@@ -11,25 +11,29 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	curl https://www.cloudflare.com/ips-v6 -o /tmp/cf_ipv6
 	cat /tmp/cf_ipv4 /tmp/cf_ipv6 > /tmp/cf_ips
 
-	echo "# Cloudflare" > $CLOUDFLARE_FILE_PATH;
-	echo "" >> $CLOUDFLARE_FILE_PATH;
+	if [ -d "/etc/nginx" ]; then
+		echo "# Cloudflare" > $CLOUDFLARE_FILE_PATH;
+		echo "" >> $CLOUDFLARE_FILE_PATH;
 
-	echo "# - IPv4" >> $CLOUDFLARE_FILE_PATH;
-	for i in `cat /tmp/cf_ipv4`; do
-		echo "set_real_ip_from $i;" >> $CLOUDFLARE_FILE_PATH;
-	done
+		echo "# - IPv4" >> $CLOUDFLARE_FILE_PATH;
+		for i in `cat /tmp/cf_ipv4`; do
+			echo "set_real_ip_from $i;" >> $CLOUDFLARE_FILE_PATH;
+		done
 
-	echo "" >> $CLOUDFLARE_FILE_PATH;
-	echo "# - IPv6" >> $CLOUDFLARE_FILE_PATH;
-	for i in `cat /tmp/cf_ipv6`; do
-		echo "set_real_ip_from $i;" >> $CLOUDFLARE_FILE_PATH;
-	done
+		echo "" >> $CLOUDFLARE_FILE_PATH;
+		echo "# - IPv6" >> $CLOUDFLARE_FILE_PATH;
+		for i in `cat /tmp/cf_ipv6`; do
+			echo "set_real_ip_from $i;" >> $CLOUDFLARE_FILE_PATH;
+		done
 
-	echo "" >> $CLOUDFLARE_FILE_PATH;
-	echo "real_ip_header CF-Connecting-IP;" >> $CLOUDFLARE_FILE_PATH;
+		echo "" >> $CLOUDFLARE_FILE_PATH;
+		echo "real_ip_header CF-Connecting-IP;" >> $CLOUDFLARE_FILE_PATH;
 
-	# test configuration and reload nginx
-	nginx -t && systemctl reload nginx
+		if type "nginx" > /dev/null; then
+			# test configuration and reload nginx
+			nginx -t && systemctl reload nginx
+		fi
+	fi
 
 	# delete old rules which are commented clearly with "Cloudflare IP". Don't ever comment an ufw rule with that. Otherwise it will get deleted too.
 	for NUM in $(ufw status numbered | grep 'Cloudflare IP' | awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn); do
