@@ -58,6 +58,7 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 
 		echo "" >> $CLOUDFLARE_FILE_PATH;
 		echo "# - IPv6" >> $CLOUDFLARE_FILE_PATH;
+
 		for i in `cat /tmp/cf_ipv6`; do
 			echo "RemoteIPTrustedProxy $i" >> $CLOUDFLARE_FILE_PATH;
 		done
