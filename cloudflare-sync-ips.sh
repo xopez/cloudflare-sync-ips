@@ -11,7 +11,7 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	cat /tmp/cf_ipv4 /tmp/cf_ipv6 > /tmp/cf_ips
 
 	# Nginx
-	if [ -f "/etc/nginx/nginx.conf" ]; then
+	if type "nginx" &> /dev/null; then
 		CLOUDFLARE_FILE_PATH=/etc/nginx/conf.d/cloudflare_realip.conf
 		echo "# Cloudflare" > $CLOUDFLARE_FILE_PATH;
 		echo "" >> $CLOUDFLARE_FILE_PATH;
@@ -30,14 +30,12 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 		echo "" >> $CLOUDFLARE_FILE_PATH;
 		echo "real_ip_header CF-Connecting-IP;" >> $CLOUDFLARE_FILE_PATH;
 
-		if type "nginx" > /dev/null; then
-			# test configuration and reload nginx
-			nginx -t && systemctl reload nginx
-		fi
+		# test configuration and reload nginx
+		nginx -t && systemctl reload nginx
 	fi
 
 	# Apache2
-	if [ -f "/etc/apache2/apache2.conf" ]; then
+	if type "apache2ctl" &> /dev/null; then
 		CLOUDFLARE_FILE_PATH=/etc/apache2/conf-available/cloudflare_realip.conf
 		
 		# enable modul
@@ -63,24 +61,27 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 			echo "RemoteIPTrustedProxy $i" >> $CLOUDFLARE_FILE_PATH;
 		done
 
-		if type "apache2ctl" > /dev/null; then
-			if [ ! -f /etc/apache2/conf-enabled/cloudflare_realip.conf ]; then
-				a2enconf cloudflare_realip
-			fi
-			# test configuration and reload apache
-			apache2ctl configtest && systemctl reload apache2
+		if [ ! -f /etc/apache2/conf-enabled/cloudflare_realip.conf ]; then
+			a2enconf cloudflare_realip
 		fi
+
+		# test configuration and reload apache
+		apache2ctl configtest && systemctl reload apache2
 	fi
 
-	# delete old rules which are commented clearly with "Cloudflare IP". Don't ever comment an ufw rule with that. Otherwise it will get deleted too.
-	for NUM in $(ufw status numbered | grep 'Cloudflare IP' | awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn); do
-		yes | ufw delete $NUM;
-	done
+	# ufw if avaiable and active
+	if type "ufw" &> /dev/null && ! sudo ufw status | grep -q inactive$; then
+		# delete old rules which are commented clearly with "Cloudflare IP". Don't ever comment an ufw rule with that. Otherwise it will get deleted too.
+		for NUM in $(ufw status numbered | grep 'Cloudflare IP' | awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn); do
+			yes | ufw delete $NUM;
+		done
 
-	# add new ip rules for ufw
-	for cfip in `cat /tmp/cf_ips`; do
-		ufw allow proto tcp from $cfip to any port 80,443 comment 'Cloudflare IP';
-	done
+		# add new ip rules for ufw
+		for cfip in `cat /tmp/cf_ips`; do
+			ufw allow proto tcp from $cfip to any port 80,443 comment 'Cloudflare IP';
+		done
 
-	ufw reload
+		# reload firewall
+		ufw reload
+	fi
 fi
