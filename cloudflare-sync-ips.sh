@@ -11,8 +11,8 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	cat /tmp/cf_ipv4 /tmp/cf_ipv6 > /tmp/cf_ips
 
 	# Nginx
-	if [ -d "/etc/nginx" ]; then
-		CLOUDFLARE_FILE_PATH=/etc/nginx/cloudflare_realip.conf
+	if [ -f "/etc/nginx/nginx.conf" ]; then
+		CLOUDFLARE_FILE_PATH=/etc/nginx/conf.d/cloudflare_realip.conf
 		echo "# Cloudflare" > $CLOUDFLARE_FILE_PATH;
 		echo "" >> $CLOUDFLARE_FILE_PATH;
 
@@ -37,7 +37,7 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	fi
 
 	# Apache2
-	if [ -d "/etc/apache2" ]; then
+	if [ -f "/etc/apache2/apache2.conf" ]; then
 		CLOUDFLARE_FILE_PATH=/etc/apache2/conf-available/cloudflare_realip.conf
 		
 		# enable modul
