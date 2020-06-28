@@ -6,6 +6,7 @@ responseipv6=$(curl --head --write-out %{http_code} --silent --output /dev/null 
 
 # do only, if both adresses are reachable
 if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
+	CURRENT_TIME="$(date +%d.%m.%Y) $(date +%X)"
 	curl https://www.cloudflare.com/ips-v4 -o /tmp/cf_ipv4
 	curl https://www.cloudflare.com/ips-v6 -o /tmp/cf_ipv6
 	cat /tmp/cf_ipv4 /tmp/cf_ipv6 > /tmp/cf_ips
@@ -14,21 +15,19 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	if type "nginx" &> /dev/null; then
 		CLOUDFLARE_FILE_PATH=/etc/nginx/conf.d/cloudflare_realip.conf
 		echo "# Cloudflare" > $CLOUDFLARE_FILE_PATH;
-		echo "" >> $CLOUDFLARE_FILE_PATH;
+		echo "# Last Change: $CURRENT_TIME" >> $CLOUDFLARE_FILE_PATH;
 
-		echo "# - IPv4" >> $CLOUDFLARE_FILE_PATH;
+		echo $'\n'"# - IPv4" >> $CLOUDFLARE_FILE_PATH;
 		for i in `cat /tmp/cf_ipv4`; do
 			echo "set_real_ip_from $i;" >> $CLOUDFLARE_FILE_PATH;
 		done
 
-		echo "" >> $CLOUDFLARE_FILE_PATH;
-		echo "# - IPv6" >> $CLOUDFLARE_FILE_PATH;
+		echo $'\n'"# - IPv6" >> $CLOUDFLARE_FILE_PATH;
 		for i in `cat /tmp/cf_ipv6`; do
 			echo "set_real_ip_from $i;" >> $CLOUDFLARE_FILE_PATH;
 		done
 
-		echo "" >> $CLOUDFLARE_FILE_PATH;
-		echo "real_ip_header CF-Connecting-IP;" >> $CLOUDFLARE_FILE_PATH;
+		echo $'\n'"real_ip_header CF-Connecting-IP;" >> $CLOUDFLARE_FILE_PATH;
 
 		# test configuration and reload nginx
 		nginx -t && systemctl reload nginx
@@ -37,29 +36,27 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	# Apache2
 	if type "apache2ctl" &> /dev/null; then
 		CLOUDFLARE_FILE_PATH=/etc/apache2/conf-available/cloudflare_realip.conf
-		
-		# enable modul
-		if [ ! -f /etc/apache2/mods-enabled/remoteip.load ]; then
-			a2enmod remoteip
-		fi
 
 		echo "# Cloudflare" > $CLOUDFLARE_FILE_PATH;
-		echo "" >> $CLOUDFLARE_FILE_PATH;
+		echo "# Last Change: $CURRENT_TIME" >> $CLOUDFLARE_FILE_PATH;
 
-		echo "RemoteIPHeader CF-Connecting-IP" >> $CLOUDFLARE_FILE_PATH;
-		echo "" >> $CLOUDFLARE_FILE_PATH;
-
-		echo "# - IPv4" >> $CLOUDFLARE_FILE_PATH;
+		echo $'\n'"# - IPv4" >> $CLOUDFLARE_FILE_PATH;
 		for i in `cat /tmp/cf_ipv4`; do
 			echo "RemoteIPTrustedProxy $i" >> $CLOUDFLARE_FILE_PATH;
 		done
 
-		echo "" >> $CLOUDFLARE_FILE_PATH;
-		echo "# - IPv6" >> $CLOUDFLARE_FILE_PATH;
+		echo $'\n'"# - IPv6" >> $CLOUDFLARE_FILE_PATH;
 
 		for i in `cat /tmp/cf_ipv6`; do
 			echo "RemoteIPTrustedProxy $i" >> $CLOUDFLARE_FILE_PATH;
 		done
+
+		echo $'\n'"RemoteIPHeader CF-Connecting-IP" >> $CLOUDFLARE_FILE_PATH;
+
+		# enable modul
+		if [ ! -f /etc/apache2/mods-enabled/remoteip.load ]; then
+			a2enmod remoteip
+		fi
 
 		if [ ! -f /etc/apache2/conf-enabled/cloudflare_realip.conf ]; then
 			a2enconf cloudflare_realip
