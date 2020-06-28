@@ -67,7 +67,7 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	fi
 
 	# ufw if avaiable and active
-	if type "ufw" &> /dev/null && ! sudo ufw status | grep -q inactive$; then
+	if type "ufw" &> /dev/null && ! ufw status | grep -q inactive$; then
 		# delete old rules which are commented clearly with "Cloudflare IP". Don't ever comment an ufw rule with that. Otherwise it will get deleted too.
 		for NUM in $(ufw status numbered | grep 'Cloudflare IP' | awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn); do
 			yes | ufw delete $NUM;
