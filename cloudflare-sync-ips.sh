@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ $EUID -ne 0 ]]; then
+	echo -e "Sorry, you need to run this as root"
+	exit 1
+fi
+
 # get response codes
 responseipv4=$(curl --head --write-out %{http_code} --silent --output /dev/null https://www.cloudflare.com/ips-v4)
 responseipv6=$(curl --head --write-out %{http_code} --silent --output /dev/null https://www.cloudflare.com/ips-v6)
