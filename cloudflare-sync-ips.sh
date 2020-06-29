@@ -5,7 +5,9 @@ if [[ $EUID -ne 0 ]]; then
 	exit 1
 fi
 
-source /etc/environment
+if [ -f /etc/environment ]; then
+	source /etc/environment
+fi
 
 # get response codes
 responseipv4=$(curl --head --write-out %{http_code} --silent --output /dev/null https://www.cloudflare.com/ips-v4)
