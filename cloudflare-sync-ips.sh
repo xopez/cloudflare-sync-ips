@@ -76,13 +76,13 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	# ufw if avaiable and active
 	if type "ufw" &> /dev/null && ! ufw status | grep -q inactive$; then
 		# delete old rules which are commented clearly with "Cloudflare IP". Don't ever comment an ufw rule with that. Otherwise it will get deleted too.
-		for NUM in $(ufw status numbered | grep '# Cloudflare IP' | grep '80,443/tcp' | awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn); do
+		for NUM in $(ufw status numbered | grep '# Cloudflare IP | Last Change:' | grep '80,443/tcp' | awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn); do
 			yes | ufw delete $NUM;
 		done
 
 		# add new ip rules for ufw
 		for cfip in `cat /tmp/cf_ips`; do
-			ufw allow proto tcp from $cfip to any port 80,443 comment 'Cloudflare IP';
+			ufw allow proto tcp from $cfip to any port 80,443 comment "Cloudflare IP | Last Change: $CURRENT_TIME";
 		done
 
 		# reload firewall
