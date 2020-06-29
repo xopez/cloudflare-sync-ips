@@ -10,8 +10,8 @@ if [ -f /etc/environment ]; then
 fi
 
 # get response codes
-responseipv4=$(curl --head --write-out %{http_code} --silent --output /dev/null https://www.cloudflare.com/ips-v4)
-responseipv6=$(curl --head --write-out %{http_code} --silent --output /dev/null https://www.cloudflare.com/ips-v6)
+responseipv4=$(curl --head --write-out '%{http_code}' --silent --output /dev/null https://www.cloudflare.com/ips-v4)
+responseipv6=$(curl --head --write-out '%{http_code}' --silent --output /dev/null https://www.cloudflare.com/ips-v6)
 
 # do only, if both adresses are reachable
 if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
