@@ -23,6 +23,7 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	# Nginx
 	if type "nginx" &> /dev/null; then
 		CLOUDFLARE_FILE_PATH=/etc/nginx/conf.d/cloudflare_realip.conf
+
 		echo "# Cloudflare" > $CLOUDFLARE_FILE_PATH;
 		echo "# Last Change: $CURRENT_TIME" >> $CLOUDFLARE_FILE_PATH;
 
