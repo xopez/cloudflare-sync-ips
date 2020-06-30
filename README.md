@@ -7,6 +7,13 @@ If you already include `/etc/nginx/conf.d` in your `nginx.conf` than thats it. O
 Also make a cronjob and be sure that ufw is enabled. Otherwise the config isn't held up2date and the firewall rules aren't included.
 Don't forget to allow custom ports like ssh, ftp or whatever you need.
 
+Cronjob examples (Just choose your correct variant):
+```
+30 2 * * * export CF_SSL_ORIGIN=1 && ./cloudflare-sync-ips.sh # Allows HTTP connections from cloudflare
+30 2 * * * export CF_SSL_ORIGIN=2 && ./cloudflare-sync-ips.sh # Allows HTTPS connections from cloudflare
+30 2 * * * export CF_SSL_ORIGIN=3 && ./cloudflare-sync-ips.sh # Allows HTTP and HTTPS connections from cloudflare
+```
+
 Outputs:
 Nginx config:
 ```nginx
