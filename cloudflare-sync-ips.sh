@@ -21,7 +21,8 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	fi
 	echo ${CF_SSL_ORIGIN}
 	if [[ -z ${CF_SSL} ]]; then
-		echo "Select whether HTTP, HTTPS or both should be used to query from cloudflare to the origin server"
+		echo "Select whether HTTP, HTTPS or both should be used to query from cloudflare to the origin server:"
+		echo "Further information: https://support.cloudflare.com/hc/articles/200170416"$'\n'
 		echo "   1) Off or flexible (Port 80 will be allowed)"
 		echo "   2) Complete or complete (strict) (Port 443 will be allowed)"
 		echo "   3) Both (Port 80 and 443 will be allowed)"
