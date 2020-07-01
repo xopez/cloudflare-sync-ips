@@ -19,7 +19,7 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	if [[ ! -z ${CF_SSL_ORIGIN} ]]; then
 		CF_SSL="${CF_SSL_ORIGIN}"
 	fi
-	echo ${CF_SSL_ORIGIN}
+
 	if [[ -z ${CF_SSL} ]]; then
 		echo "Select whether HTTP, HTTPS or both should be used to query from cloudflare to the origin server:"
 		echo "Further information: https://support.cloudflare.com/hc/articles/200170416"$'\n'
