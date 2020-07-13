@@ -4,9 +4,10 @@ if [[ $EUID -ne 0 ]]; then
 	echo -e "Sorry, you need to run this as root"
 	exit 1
 fi
-
 if [ -f /etc/environment ]; then
 	source /etc/environment
+else
+	PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
 fi
 
 # get response codes
