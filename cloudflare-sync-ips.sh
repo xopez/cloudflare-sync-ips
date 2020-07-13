@@ -77,33 +77,37 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	if type "apache2ctl" &> /dev/null; then
 		CLOUDFLARE_FILE_PATH=/etc/apache2/conf-available/cloudflare_realip.conf
 
-		echo "# Cloudflare" > $CLOUDFLARE_FILE_PATH;
-		echo "# Last Change: $CURRENT_TIME" >> $CLOUDFLARE_FILE_PATH;
+		if [ ! -f /etc/apache2/mods-avaiable/remoteip.conf ]; then
+			echo "Can't enable Remote-IP Module. This Module is needed! Otherwise RemoteIPTrustedProxy-Command isn't recognized. Skipping..."
+		else
+			echo "# Cloudflare" > $CLOUDFLARE_FILE_PATH;
+			echo "# Last Change: $CURRENT_TIME" >> $CLOUDFLARE_FILE_PATH;
 
-		echo $'\n'"# - IPv4" >> $CLOUDFLARE_FILE_PATH;
-		for i in `cat /tmp/cf_ipv4`; do
-			echo "RemoteIPTrustedProxy $i" >> $CLOUDFLARE_FILE_PATH;
-		done
+			echo $'\n'"# - IPv4" >> $CLOUDFLARE_FILE_PATH;
+			for i in `cat /tmp/cf_ipv4`; do
+				echo "RemoteIPTrustedProxy $i" >> $CLOUDFLARE_FILE_PATH;
+			done
 
-		echo $'\n'"# - IPv6" >> $CLOUDFLARE_FILE_PATH;
+			echo $'\n'"# - IPv6" >> $CLOUDFLARE_FILE_PATH;
 
-		for i in `cat /tmp/cf_ipv6`; do
-			echo "RemoteIPTrustedProxy $i" >> $CLOUDFLARE_FILE_PATH;
-		done
+			for i in `cat /tmp/cf_ipv6`; do
+				echo "RemoteIPTrustedProxy $i" >> $CLOUDFLARE_FILE_PATH;
+			done
 
-		echo $'\n'"RemoteIPHeader CF-Connecting-IP" >> $CLOUDFLARE_FILE_PATH;
+			echo $'\n'"RemoteIPHeader CF-Connecting-IP" >> $CLOUDFLARE_FILE_PATH;
 
-		# enable modul
-		if [ ! -f /etc/apache2/mods-enabled/remoteip.load ]; then
-			a2enmod remoteip
+			# enable module
+			if [ ! -f /etc/apache2/mods-enabled/remoteip.load ]; then
+				a2enmod remoteip
+			fi
+
+			if [ ! -f /etc/apache2/conf-enabled/cloudflare_realip.conf ]; then
+				a2enconf cloudflare_realip
+			fi
+
+			# test configuration and reload apache
+			apache2ctl configtest && systemctl reload apache2
 		fi
-
-		if [ ! -f /etc/apache2/conf-enabled/cloudflare_realip.conf ]; then
-			a2enconf cloudflare_realip
-		fi
-
-		# test configuration and reload apache
-		apache2ctl configtest && systemctl reload apache2
 	fi
 
 	# ufw if avaiable and active
