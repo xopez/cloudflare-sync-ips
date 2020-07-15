@@ -77,7 +77,7 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	if type "apache2ctl" &> /dev/null; then
 		CLOUDFLARE_FILE_PATH=/etc/apache2/conf-available/cloudflare_realip.conf
 
-		if [ ! -f /etc/apache2/mods-avaiable/remoteip.conf ]; then
+		if [ ! -f /etc/apache2/mods-available/remoteip.load ]; then
 			echo "Can't enable Remote-IP Module. This Module is needed! Otherwise RemoteIPTrustedProxy-Command isn't recognized. Skipping..."
 		else
 			echo "# Cloudflare" > $CLOUDFLARE_FILE_PATH;
