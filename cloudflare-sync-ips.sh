@@ -6,6 +6,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 if [ -f /etc/environment ]; then
+	# shellcheck disable=SC1091
 	source /etc/environment
 else
 	PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
@@ -18,7 +19,7 @@ responseipv6=$(curl --head --write-out '%{http_code}' --silent --output /dev/nul
 # do only, if both adresses are reachable
 if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 
-	if [[ ! -z ${CF_SSL_ORIGIN} ]]; then
+	if [[ -n ${CF_SSL_ORIGIN} ]]; then
 		CF_SSL="${CF_SSL_ORIGIN}"
 	fi
 
@@ -58,12 +59,12 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 		echo "# Last Change: $CURRENT_TIME" >> $CLOUDFLARE_FILE_PATH;
 
 		echo $'\n'"# - IPv4" >> $CLOUDFLARE_FILE_PATH;
-		for i in `cat /tmp/cf_ipv4`; do
+		for i in $(cat /tmp/cf_ipv4); do
 			echo "set_real_ip_from $i;" >> $CLOUDFLARE_FILE_PATH;
 		done
 
 		echo $'\n'"# - IPv6" >> $CLOUDFLARE_FILE_PATH;
-		for i in `cat /tmp/cf_ipv6`; do
+		for i in $(cat /tmp/cf_ipv6); do
 			echo "set_real_ip_from $i;" >> $CLOUDFLARE_FILE_PATH;
 		done
 
@@ -84,13 +85,13 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 			echo "# Last Change: $CURRENT_TIME" >> $CLOUDFLARE_FILE_PATH;
 
 			echo $'\n'"# - IPv4" >> $CLOUDFLARE_FILE_PATH;
-			for i in `cat /tmp/cf_ipv4`; do
+			for i in $(cat /tmp/cf_ipv4); do
 				echo "RemoteIPTrustedProxy $i" >> $CLOUDFLARE_FILE_PATH;
 			done
 
 			echo $'\n'"# - IPv6" >> $CLOUDFLARE_FILE_PATH;
 
-			for i in `cat /tmp/cf_ipv6`; do
+			for i in $(cat /tmp/cf_ipv6); do
 				echo "RemoteIPTrustedProxy $i" >> $CLOUDFLARE_FILE_PATH;
 			done
 
@@ -113,13 +114,13 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 	# ufw if avaiable and active
 	if type "ufw" &> /dev/null && ! ufw status | grep -q inactive$; then
 		# delete old rules which are commented clearly with "Cloudflare IP". Don't ever comment an ufw rule with that. Otherwise it will get deleted too.
-		for NUM in $(ufw status numbered | grep '# Cloudflare IP | Last Change:' | awk -F"[][]" '{print $2}' | tr --delete [:blank:] | sort -rn); do
-			yes | ufw delete $NUM;
+		for NUM in $(ufw status numbered | grep '# Cloudflare IP | Last Change:' | awk -F"[][]" '{print $2}' | tr --delete '[:blank:]' | sort -rn); do
+			yes | ufw delete "$NUM";
 		done
 
 		# add new ip rules for ufw
-		for cfip in `cat /tmp/cf_ips`; do
-			ufw allow proto tcp from $cfip to any port $PORT comment "Cloudflare IP | Last Change: $CURRENT_TIME";
+		for cfip in $(cat /tmp/cf_ips); do
+			ufw allow proto tcp from "$cfip" to any port $PORT comment "Cloudflare IP | Last Change: $CURRENT_TIME";
 		done
 
 		# reload firewall
