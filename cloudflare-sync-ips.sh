@@ -46,7 +46,7 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 		;;
 	esac
 
-	CURRENT_TIME="$(date +%d.%m.%Y) $(date +%T)"
+	CURRENT_TIME="$(date +%d.%m.%Y) $(date +%R)"
 	curl https://www.cloudflare.com/ips-v4 -o /tmp/cf_ipv4
 	curl https://www.cloudflare.com/ips-v6 -o /tmp/cf_ipv6
 	cat /tmp/cf_ipv4 /tmp/cf_ipv6 > /tmp/cf_ips
