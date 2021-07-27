@@ -71,7 +71,7 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 		echo $'\n'"real_ip_header CF-Connecting-IP;" >> $CLOUDFLARE_FILE_PATH;
 
 		# test configuration and reload nginx
-		nginx -t && systemctl reload nginx
+		nginx -t && systemctl restart nginx
 	fi
 
 	# Apache2
@@ -107,7 +107,7 @@ if [ "$responseipv4" == "200" ] && [ "$responseipv6" == "200" ]; then
 			fi
 
 			# test configuration and reload apache
-			apache2ctl configtest && systemctl reload apache2
+			apache2ctl configtest && systemctl restart apache2
 		fi
 	fi
 
